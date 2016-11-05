@@ -7,12 +7,16 @@ using System.Web.Http;
 using BusinessEntities.Entities;
 using BusinessServices;
 using BusinessServices.Interfaces;
+using RZNU.DZ1.ActionFilters;
+using RZNU.DZ1.Filters;
 
 namespace RZNU.DZ1.Controllers
 {
+    [AuthorizationRequired]
     public class QuoteController : ApiController
     {
         private readonly IQuoteServices _quoteServices;
+        private readonly ITokenServices _tokenServices;
 
         #region Public Constructor
 
@@ -22,20 +26,40 @@ namespace RZNU.DZ1.Controllers
         public QuoteController()
         {
             _quoteServices = ServicesFactory.GetQuoteServices();
+            _tokenServices = ServicesFactory.GetTokenServices();
         }
 
         #endregion
 
         // GET api/quote
+        [ApiAuthenticationFilter(true)]
         public HttpResponseMessage Get()
         {
-            var quotes = _quoteServices.GetAllQuotes();
-            if (quotes != null)
+            var re = Request;
+            var headers = re.Headers;
+            string token = null;
+
+            if (headers.Contains("Token"))
             {
-                var quotestEntities = quotes as List<QuoteEntity> ?? quotes.ToList();
-                if (quotestEntities.Any())
-                    return Request.CreateResponse(HttpStatusCode.OK, quotestEntities);
+                token = headers.GetValues("Token").First();
             }
+
+            if (token != null)
+            {
+
+                var userId = _tokenServices.GetUserId(token);
+                if (userId != null)
+                {
+                    var quotes = _quoteServices.GetQuotesForUser(userId.Value);
+                    if (quotes != null)
+                    {
+                        var quotestEntities = quotes as List<QuoteEntity> ?? quotes.ToList();
+                        if (quotestEntities.Any())
+                            return Request.CreateResponse(HttpStatusCode.OK, quotestEntities);
+                    }
+                }
+            }
+
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Quotes not found");
         }
 
@@ -49,6 +73,7 @@ namespace RZNU.DZ1.Controllers
         }
 
         // POST api/quote
+        [ApiAuthenticationFilter(true)]
         public int Post([FromBody] QuoteEntity quoteEntity)
         {
             //Todo
@@ -56,6 +81,7 @@ namespace RZNU.DZ1.Controllers
         }
 
         // PUT api/quote/5
+        [ApiAuthenticationFilter(true)]
         public bool Put(int id, [FromBody]QuoteEntity quoteEntity)
         {
             if (id > 0)
@@ -66,6 +92,7 @@ namespace RZNU.DZ1.Controllers
         }
 
         // DELETE api/quote/5
+        [ApiAuthenticationFilter(true)]
         public bool Delete(int id)
         {
             if (id > 0)

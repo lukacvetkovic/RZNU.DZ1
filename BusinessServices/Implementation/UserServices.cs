@@ -13,9 +13,9 @@ namespace BusinessServices.Implementation
         private readonly UnitOfWork _unitOfWork;
 
 
-        public UserServices(UnitOfWork unitOfWork)
+        public UserServices()
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = new UnitOfWork();
         }
 
         public int Authenticate(string email, string password)

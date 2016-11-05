@@ -46,8 +46,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementation\QuoteServices.cs" />
+    <Compile Include="Implementation\TokenServices.cs" />
     <Compile Include="Implementation\UserServices.cs" />
     <Compile Include="Interfaces\IQuoteServices.cs" />
+    <Compile Include="Interfaces\ITokenServices.cs" />
     <Compile Include="Interfaces\IUserServices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServicesFactory.cs" />

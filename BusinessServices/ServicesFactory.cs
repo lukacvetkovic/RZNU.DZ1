@@ -14,5 +14,16 @@ namespace BusinessServices
         {
             return new QuoteServices();
         }
+
+        public static IUserServices GetUserServices()
+        {
+            return new UserServices();
+        }
+
+        public static ITokenServices GetTokenServices()
+        {
+            return new TokenServices();
+        }
+
     }
 }
