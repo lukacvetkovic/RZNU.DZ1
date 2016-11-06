@@ -45,7 +45,7 @@ namespace RZNU.DZ1.Helpers
             {
                 if (traceAction != null && traceAction.Target != null)
                 {
-                    category = category + Environment.NewLine + "Action Parameters : " + traceAction.Target;
+                    category = category + Environment.NewLine + "Action Parameters : " + Newtonsoft.Json.JsonConvert.SerializeObject(traceAction.Target);
                 }
                 var record = new TraceRecord(request, category, level);
                 if (traceAction != null) traceAction(record);
@@ -84,6 +84,12 @@ namespace RZNU.DZ1.Helpers
             if (!string.IsNullOrWhiteSpace(record.Operator))
                 message.Append(" ").Append(record.Operator).Append(" ").Append(record.Operation);
 
+            if (record.Exception != null && !string.IsNullOrWhiteSpace(record.Exception.GetBaseException().Message))
+            {
+                var exceptionType = record.Exception.GetType();
+                message.Append(Environment.NewLine);
+                message.Append("").Append("Error: " + record.Exception.GetBaseException().Message + Environment.NewLine);
+            }
 
             Logger[record.Level](Convert.ToString(message) + Environment.NewLine);
         }

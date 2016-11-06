@@ -12,6 +12,7 @@ namespace RZNU.DZ1
         {
             // Web API configuration and services
             config.Filters.Add(new LoggingFilterAttribute());
+            config.Filters.Add(new GlobalExceptionAttribute());
 
             // Web API routes
             config.MapHttpAttributeRoutes();
