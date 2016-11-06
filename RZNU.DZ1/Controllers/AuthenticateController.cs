@@ -4,18 +4,35 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
+using AutoMapper;
+using BusinessServices;
 using BusinessServices.Interfaces;
 using RZNU.DZ1.Filters;
 
 namespace RZNU.DZ1.Controllers
 {
-    [ApiAuthenticationFilter]
+
     public class AuthenticateController : ApiController
     {
+        public class UserLogin
+        {
+            public string email { get; set; }
+            public string password { get; set; }
+        }
+
+        public class UserRegister
+        {
+            public string email { get; set; }
+            public string password { get; set; }
+            public string name { get; set; }
+        }
+
         #region Private variable.
 
         private readonly ITokenServices _tokenServices;
+        private readonly IUserServices _userServices;
 
         #endregion
 
@@ -24,9 +41,10 @@ namespace RZNU.DZ1.Controllers
         /// <summary>
         /// Public constructor to initialize product service instance
         /// </summary>
-        public AuthenticateController(ITokenServices tokenServices)
+        public AuthenticateController()
         {
-            _tokenServices = tokenServices;
+            _tokenServices = ServicesFactory.GetTokenServices();
+            _userServices = ServicesFactory.GetUserServices();
         }
 
         #endregion
@@ -35,6 +53,7 @@ namespace RZNU.DZ1.Controllers
         /// Authenticates user and returns token with expiry.
         /// </summary>
         /// <returns></returns>
+        [ApiAuthenticationFilter]
         public HttpResponseMessage Authenticate()
         {
             if (System.Threading.Thread.CurrentPrincipal != null && System.Threading.Thread.CurrentPrincipal.Identity.IsAuthenticated)
@@ -63,5 +82,12 @@ namespace RZNU.DZ1.Controllers
             response.Headers.Add("Access-Control-Expose-Headers", "Token,TokenExpiry");
             return response;
         }
+
+        public HttpResponseMessage Register(UserRegister userRegister)
+        {
+            var succ = _userServices.Register(userRegister.email, userRegister.password, userRegister.name);
+            return Request.CreateResponse(HttpStatusCode.OK, succ);
+        }
+
     }
 }

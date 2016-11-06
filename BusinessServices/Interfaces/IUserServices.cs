@@ -9,5 +9,6 @@ namespace BusinessServices.Interfaces
     public interface IUserServices
     {
         int Authenticate(string email, string password);
+        bool Register(string email, string password, string name);
     }
 }

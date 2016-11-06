@@ -42,7 +42,7 @@ namespace BusinessServices.Implementation
             string token = Guid.NewGuid().ToString();
             DateTime issuedOn = DateTime.Now;
             DateTime expiredOn = DateTime.Now.AddSeconds(
-            Convert.ToDouble(86400);
+            Convert.ToDouble(86400));
             var tokendomain = new Token
             {
                 UserId = userId,
@@ -75,7 +75,7 @@ namespace BusinessServices.Implementation
             if (token != null && !(DateTime.Now > token.ExpiresOn))
             {
                 token.ExpiresOn = token.ExpiresOn.AddSeconds(
-                Convert.ToDouble(86400);
+                Convert.ToDouble(86400));
                 _unitOfWork.TokenRepository.Update(token);
                 _unitOfWork.Save();
                 return true;

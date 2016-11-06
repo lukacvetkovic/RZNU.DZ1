@@ -9,10 +9,11 @@ using BusinessServices;
 using BusinessServices.Interfaces;
 using RZNU.DZ1.ActionFilters;
 using RZNU.DZ1.Filters;
+using System.Threading;
 
 namespace RZNU.DZ1.Controllers
 {
-    [AuthorizationRequired]
+    [ApiAuthenticationFilter(true)]
     public class QuoteController : ApiController
     {
         private readonly IQuoteServices _quoteServices;
@@ -32,30 +33,20 @@ namespace RZNU.DZ1.Controllers
         #endregion
 
         // GET api/quote
-        [ApiAuthenticationFilter(true)]
+        [HttpGet]
         public HttpResponseMessage Get()
         {
-            var re = Request;
-            var headers = re.Headers;
-            string token = null;
-
-            if (headers.Contains("Token"))
+            var basicAuthenticationIdentity = Thread.CurrentPrincipal.Identity as BasicAuthenticationIdentity;
+            if (basicAuthenticationIdentity != null)
             {
-                token = headers.GetValues("Token").First();
-            }
-
-            if (token != null)
-            {
-
-                var userId = _tokenServices.GetUserId(token);
-                if (userId != null)
+                var userId = basicAuthenticationIdentity.Id;
+                var quotes = _quoteServices.GetQuotesForUser(userId);
+                if (quotes != null)
                 {
-                    var quotes = _quoteServices.GetQuotesForUser(userId.Value);
-                    if (quotes != null)
+                    var quotestEntities = quotes as List<QuoteEntity> ?? quotes.ToList();
+                    if (quotestEntities.Any())
                     {
-                        var quotestEntities = quotes as List<QuoteEntity> ?? quotes.ToList();
-                        if (quotestEntities.Any())
-                            return Request.CreateResponse(HttpStatusCode.OK, quotestEntities);
+                        return Request.CreateResponse(HttpStatusCode.OK, quotestEntities);
                     }
                 }
             }
@@ -63,7 +54,17 @@ namespace RZNU.DZ1.Controllers
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Quotes not found");
         }
 
+
+        [HttpGet]
+        public HttpResponseMessage GetAll()
+        {
+            var quoteEntity = _quoteServices.GetAllQuotes();
+            if (quoteEntity != null)
+                return Request.CreateResponse(HttpStatusCode.OK, quoteEntity);
+            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No quote found");
+        }
         // GET api/quote/5
+        [HttpGet]
         public HttpResponseMessage Get(int id)
         {
             var quoteEntity = _quoteServices.GetQuoteById(id);
@@ -73,31 +74,65 @@ namespace RZNU.DZ1.Controllers
         }
 
         // POST api/quote
-        [ApiAuthenticationFilter(true)]
-        public int Post([FromBody] QuoteEntity quoteEntity)
+        [HttpPost]
+        public HttpResponseMessage Create([FromBody] QuoteEntity quoteEntity)
         {
-            //Todo
-            return _quoteServices.CreateQuote(quoteEntity);
+            var basicAuthenticationIdentity = Thread.CurrentPrincipal.Identity as BasicAuthenticationIdentity;
+            if (basicAuthenticationIdentity != null)
+            {
+                var userId = basicAuthenticationIdentity.Id;
+
+
+                quoteEntity.UserId = userId;
+
+                var id = _quoteServices.CreateQuote(quoteEntity);
+                return Request.CreateResponse(HttpStatusCode.OK, id);
+            }
+
+
+            return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Not athorized");
         }
 
         // PUT api/quote/5
-        [ApiAuthenticationFilter(true)]
-        public bool Put(int id, [FromBody]QuoteEntity quoteEntity)
+        [HttpPut]
+        public HttpResponseMessage Update(int id, [FromBody] QuoteEntity quoteEntity)
         {
-            if (id > 0)
+            var basicAuthenticationIdentity = Thread.CurrentPrincipal.Identity as BasicAuthenticationIdentity;
+            if (basicAuthenticationIdentity != null)
             {
-                return _quoteServices.UpdateQuote(id, quoteEntity);
+                var userId = basicAuthenticationIdentity.Id;
+                if (id > 0)
+                {
+                    if (_quoteServices.GetQuoteById(id).UserId == userId)
+                    {
+                        var succ = _quoteServices.UpdateQuote(id, quoteEntity);
+                        return Request.CreateResponse(HttpStatusCode.OK, succ);
+                    }
+                }
             }
-            return false;
+
+            return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Not athorized");
         }
 
         // DELETE api/quote/5
-        [ApiAuthenticationFilter(true)]
-        public bool Delete(int id)
+        [HttpDelete]
+        public HttpResponseMessage Delete(int id)
         {
-            if (id > 0)
-                return _quoteServices.DeleteQuote(id);
-            return false;
+            var basicAuthenticationIdentity = Thread.CurrentPrincipal.Identity as BasicAuthenticationIdentity;
+            if (basicAuthenticationIdentity != null)
+            {
+                var userId = basicAuthenticationIdentity.Id;
+                if (id > 0)
+                {
+                    if (_quoteServices.GetQuoteById(id).UserId == userId)
+                    {
+                        var succ = _quoteServices.DeleteQuote(id);
+                        return Request.CreateResponse(HttpStatusCode.OK, succ);
+                    }
+                }
+            }
+
+            return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Not athorized");
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessServices.Interfaces;
+using DataModel.Database;
 using DataModel.UnitOfWork;
 
 namespace BusinessServices.Implementation
@@ -26,6 +27,20 @@ namespace BusinessServices.Implementation
                 return user.Id;
             }
             return 0;
+        }
+
+        public bool Register(string email, string password, string name)
+        {
+            var user = _unitOfWork.UserRepository.Get(u => u.Email == email);
+            if (user != null)
+            {
+                return false;
+            }
+
+            _unitOfWork.UserRepository.Insert(new User() { Email = email, Password = password, Name = name });
+            _unitOfWork.Save();
+
+            return true;
         }
     }
 }
