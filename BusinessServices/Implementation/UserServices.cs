@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using BusinessEntities.Entities;
 using BusinessServices.Interfaces;
 using DataModel.Database;
 using DataModel.UnitOfWork;
@@ -41,6 +43,20 @@ namespace BusinessServices.Implementation
             _unitOfWork.Save();
 
             return true;
+        }
+
+        public UserEntity GetUserByEmail(string email)
+        {
+            var user = _unitOfWork.UserRepository.Get(u => u.Email == email);
+            if (user != null)
+            {
+                Mapper.Initialize(cfg => cfg.CreateMap<User, UserEntity>());
+
+                UserEntity dto = Mapper.Map<UserEntity>(user);
+
+                return dto;
+            }
+            return null;
         }
     }
 }
