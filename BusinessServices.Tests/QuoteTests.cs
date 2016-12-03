@@ -9,7 +9,7 @@ namespace BusinessServices.Tests
     public class QuoteTests
     {
         [TestMethod]
-        public void CreateGetDelete()
+        public void CreateGetUpdateDelete()
         {
             IQuoteServices qs = ServicesFactory.GetQuoteServices();
             IUserServices us = ServicesFactory.GetUserServices();
@@ -19,20 +19,20 @@ namespace BusinessServices.Tests
             {
                 us.Register("test@test.hr", "123456", "Test User");
                 user = us.GetUserByEmail("test@test.hr");
-            } 
-            
+            }
+
             //Create quote
-            var quote= new QuoteEntity() {Text = "Test",UserId = user.Id};
+            var quote = new QuoteEntity() { Text = "Test", UserId = user.Id };
             var quoteId = qs.CreateQuote(quote);
 
-            Assert.AreNotEqual(quoteId,0);
+            Assert.AreNotEqual(quoteId, 0);
 
             //Get quote
             var newQuote = qs.GetQuoteById(quoteId);
 
             Assert.IsNotNull(newQuote);
 
-            Assert.AreEqual(newQuote.Text,quote.Text);
+            Assert.AreEqual(newQuote.Text, quote.Text);
 
             Assert.AreEqual(newQuote.UserId, quote.UserId);
 
@@ -58,5 +58,6 @@ namespace BusinessServices.Tests
 
 
         }
+
     }
 }
