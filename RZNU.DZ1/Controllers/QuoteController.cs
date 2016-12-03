@@ -74,7 +74,7 @@ namespace RZNU.DZ1.Controllers
         }
 
         // POST api/quote
-        [HttpPost]
+        [HttpPut]
         public HttpResponseMessage Create([FromBody] QuoteEntity quoteEntity)
         {
             var basicAuthenticationIdentity = Thread.CurrentPrincipal.Identity as BasicAuthenticationIdentity;
@@ -94,7 +94,7 @@ namespace RZNU.DZ1.Controllers
         }
 
         // PUT api/quote/5
-        [HttpPut]
+        [HttpPost]
         public HttpResponseMessage Update(int id, [FromBody] QuoteEntity quoteEntity)
         {
             var basicAuthenticationIdentity = Thread.CurrentPrincipal.Identity as BasicAuthenticationIdentity;
